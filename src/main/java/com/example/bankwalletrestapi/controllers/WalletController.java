@@ -2,12 +2,15 @@ package com.example.bankwalletrestapi.controllers;
 
 import com.example.bankwalletrestapi.models.dtos.userDtos.UserResponseDto;
 import com.example.bankwalletrestapi.models.dtos.walletDtos.MoneyOperationDto;
+import com.example.bankwalletrestapi.models.dtos.walletDtos.TransferDto;
 import com.example.bankwalletrestapi.services.WalletService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
 
 @Slf4j
 @RestController
@@ -35,4 +38,13 @@ public class WalletController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/transfer")
+    public ResponseEntity<UserResponseDto> transfer(
+            @RequestParam Long from,
+            @Valid @RequestBody TransferDto dto) {
+        log.info("REST request to transfer {} EUR from user: {} to user: {}",
+                dto.getAmount(), from, dto.getTargetUserId());
+        UserResponseDto response = walletService.transfer(from, dto);
+        return ResponseEntity.ok(response);
+    }
 }
