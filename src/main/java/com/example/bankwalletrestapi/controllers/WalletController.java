@@ -47,4 +47,11 @@ public class WalletController {
         UserResponseDto response = walletService.transfer(from, dto);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/{userId}/balance")
+    public ResponseEntity<BigDecimal> getBalance(@PathVariable Long userId) {
+        log.info("REST request to get balance for user: {}", userId);
+        BigDecimal balance = walletService.getBalance(userId);
+        return ResponseEntity.ok(balance);
+    }
 }
