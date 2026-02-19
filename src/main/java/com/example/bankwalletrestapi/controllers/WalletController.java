@@ -26,4 +26,13 @@ public class WalletController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/{userId}/withdraw")
+    public ResponseEntity<UserResponseDto> withdraw(
+            @PathVariable Long userId,
+            @Valid @RequestBody MoneyOperationDto dto) {
+        log.info("REST request to withdraw {} EUR for user: {}", dto.getAmount(), userId);
+        UserResponseDto response = walletService.withdraw(userId, dto);
+        return ResponseEntity.ok(response);
+    }
+
 }
