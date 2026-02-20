@@ -1,5 +1,6 @@
 package com.example.bankwalletrestapi.services;
 
+import com.example.bankwalletrestapi.client.ExchangeRateClient;
 import com.example.bankwalletrestapi.models.dtos.userDtos.UserResponseDto;
 import com.example.bankwalletrestapi.models.dtos.walletDtos.MoneyOperationDto;
 import com.example.bankwalletrestapi.models.dtos.walletDtos.TransferDto;
@@ -24,6 +25,7 @@ public class WalletService {
     private final WalletRepository walletRepository;
     private final UserRepository userRepository;
     private final DtoMapper dtoMapper;
+    private final ExchangeRateClient exchangeRateClient;
 
     public UserResponseDto deposit(Long userId, MoneyOperationDto dto) {
         log.info("Processing deposit for user ID: {}, amount: {} EUR", userId, dto.getAmount());
@@ -31,7 +33,10 @@ public class WalletService {
         Wallet wallet = walletRepository.findByUserIdWithLock(userId)
                 .orElseThrow(() -> new RuntimeException("Wallet not found for user ID: " + userId));
 
-        wallet.deposit(dto.getAmount());
+        BigDecimal amountInEur = exchangeRateClient.convertToEur(dto.getCurrency(), dto.getAmount());
+        log.info("Converted {} {} to {} EUR", dto.getAmount(), dto.getCurrency(), amountInEur);
+
+        wallet.deposit(amountInEur);
 
         log.info("Deposit successful. New balance: {} EUR", wallet.getBalance());
 
