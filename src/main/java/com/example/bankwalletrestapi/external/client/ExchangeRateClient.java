@@ -1,5 +1,6 @@
-package com.example.bankwalletrestapi.client;
+package com.example.bankwalletrestapi.external.client;
 
+import com.example.bankwalletrestapi.external.helpers.CurrencyConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
