@@ -1,5 +1,6 @@
 package com.example.bankwalletrestapi.services;
 
+import com.example.bankwalletrestapi.models.dtos.authDtos.RegisterDto;
 import com.example.bankwalletrestapi.models.dtos.userDtos.UserCreateDto;
 import com.example.bankwalletrestapi.models.dtos.userDtos.UserResponseDto;
 import com.example.bankwalletrestapi.models.entities.User;
@@ -8,6 +9,7 @@ import com.example.bankwalletrestapi.repositories.UserRepository;
 import com.example.bankwalletrestapi.utils.DtoMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final DtoMapper dtoMapper;
+    private final PasswordEncoder passwordEncoder;
 
     public UserResponseDto createUser(UserCreateDto userCreateDto) {
         log.info("Creating new user: {}", userCreateDto.getUsername());
@@ -43,6 +46,31 @@ public class UserService {
         log.info("Successfully created user with ID: {}, balance: {} EUR",
                 savedUser.getId(), savedUser.getWallet().getBalance());
 
+        return dtoMapper.toUserResponse(savedUser);
+    }
+
+    public UserResponseDto registerUser(RegisterDto registerDto) {
+        log.info("Registering new user: {}", registerDto.getUsername());
+
+        if (userRepository.existsByUsername(registerDto.getUsername())) {
+            throw new RuntimeException("Username already exists");
+        }
+        if (userRepository.existsByEmail(registerDto.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        User user = new User(
+                registerDto.getUsername(),
+                registerDto.getEmail(),
+                passwordEncoder.encode(registerDto.getPassword())
+        );
+
+        Wallet wallet = new Wallet();
+        wallet.setBalance(BigDecimal.ZERO);
+        wallet.setUser(user);
+        user.setWallet(wallet);
+
+        User savedUser = userRepository.save(user);
         return dtoMapper.toUserResponse(savedUser);
     }
 
