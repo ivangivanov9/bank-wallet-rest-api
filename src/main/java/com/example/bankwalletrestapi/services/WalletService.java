@@ -1,6 +1,6 @@
 package com.example.bankwalletrestapi.services;
 
-import com.example.bankwalletrestapi.client.ExchangeRateClient;
+import com.example.bankwalletrestapi.external.client.ExchangeRateClient;
 import com.example.bankwalletrestapi.models.dtos.userDtos.UserResponseDto;
 import com.example.bankwalletrestapi.models.dtos.walletDtos.MoneyOperationDto;
 import com.example.bankwalletrestapi.models.dtos.walletDtos.TransferDto;
