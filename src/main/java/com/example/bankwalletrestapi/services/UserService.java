@@ -1,5 +1,6 @@
 package com.example.bankwalletrestapi.services;
 
+import com.example.bankwalletrestapi.models.dtos.authDtos.RegisterDto;
 import com.example.bankwalletrestapi.models.dtos.userDtos.UserCreateDto;
 import com.example.bankwalletrestapi.models.dtos.userDtos.UserResponseDto;
 import com.example.bankwalletrestapi.models.entities.User;
@@ -8,10 +9,13 @@ import com.example.bankwalletrestapi.repositories.UserRepository;
 import com.example.bankwalletrestapi.utils.DtoMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -21,6 +25,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final DtoMapper dtoMapper;
+    private final PasswordEncoder passwordEncoder;
 
     public UserResponseDto createUser(UserCreateDto userCreateDto) {
         log.info("Creating new user: {}", userCreateDto.getUsername());
@@ -46,6 +51,31 @@ public class UserService {
         return dtoMapper.toUserResponse(savedUser);
     }
 
+    public UserResponseDto registerUser(RegisterDto registerDto) {
+        log.info("Registering new user: {}", registerDto.getUsername());
+
+        if (userRepository.existsByUsername(registerDto.getUsername())) {
+            throw new RuntimeException("Username already exists");
+        }
+        if (userRepository.existsByEmail(registerDto.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        User user = new User(
+                registerDto.getUsername(),
+                registerDto.getEmail(),
+                passwordEncoder.encode(registerDto.getPassword())
+        );
+
+        Wallet wallet = new Wallet();
+        wallet.setBalance(BigDecimal.ZERO);
+        wallet.setUser(user);
+        user.setWallet(wallet);
+
+        User savedUser = userRepository.save(user);
+        return dtoMapper.toUserResponse(savedUser);
+    }
+
     @Transactional(readOnly = true)
     public UserResponseDto getUserById(Long id) {
         log.info("Searching for user with ID: {}", id);
@@ -54,6 +84,19 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
 
         return dtoMapper.toUserResponse(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserResponseDto> getAllUsers() {
+        log.info("Fetching all users from database");
+
+        List<User> users = userRepository.findAll();
+        List<UserResponseDto> userDtos = users.stream()
+                .map(dtoMapper::toUserResponse)
+                .collect(Collectors.toList());
+
+        log.info("Found {} users", userDtos.size());
+        return userDtos;
     }
 
     public void deleteUser(Long id) {
