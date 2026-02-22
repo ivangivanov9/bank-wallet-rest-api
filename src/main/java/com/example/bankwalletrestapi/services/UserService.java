@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -82,6 +84,19 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
 
         return dtoMapper.toUserResponse(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserResponseDto> getAllUsers() {
+        log.info("Fetching all users from database");
+
+        List<User> users = userRepository.findAll();
+        List<UserResponseDto> userDtos = users.stream()
+                .map(dtoMapper::toUserResponse)
+                .collect(Collectors.toList());
+
+        log.info("Found {} users", userDtos.size());
+        return userDtos;
     }
 
     public void deleteUser(Long id) {
