@@ -1,5 +1,6 @@
-package com.example.bankwalletrestapi.client;
+package com.example.bankwalletrestapi.external.client;
 
+import com.example.bankwalletrestapi.external.dto.LatestRatesResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;

@@ -1,4 +1,4 @@
-package com.example.bankwalletrestapi.client;
+package com.example.bankwalletrestapi.external.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

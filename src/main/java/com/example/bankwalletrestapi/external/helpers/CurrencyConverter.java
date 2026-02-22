@@ -1,4 +1,4 @@
-package com.example.bankwalletrestapi.client;
+package com.example.bankwalletrestapi.external.helpers;
 
 import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
