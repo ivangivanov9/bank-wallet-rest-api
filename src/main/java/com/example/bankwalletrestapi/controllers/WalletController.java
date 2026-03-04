@@ -2,8 +2,8 @@ package com.example.bankwalletrestapi.controllers;
 
 import com.example.bankwalletrestapi.models.dtos.userDtos.UserResponseDto;
 import com.example.bankwalletrestapi.models.dtos.walletDtos.MoneyOperationDto;
-import com.example.bankwalletrestapi.models.dtos.walletDtos.TransferDto;
-import com.example.bankwalletrestapi.services.WalletService;
+import com.example.bankwalletrestapi.models.dtos.walletDtos.TransferDto;;
+import com.example.bankwalletrestapi.services.interfaces.IWalletService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class WalletController {
 
-    private final WalletService walletService;
+    private final IWalletService walletService;
 
     @PostMapping("/{userId}/deposit")
     public ResponseEntity<UserResponseDto> deposit(

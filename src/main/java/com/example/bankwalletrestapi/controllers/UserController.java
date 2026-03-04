@@ -2,7 +2,7 @@ package com.example.bankwalletrestapi.controllers;
 
 import com.example.bankwalletrestapi.models.dtos.userDtos.UserCreateDto;
 import com.example.bankwalletrestapi.models.dtos.userDtos.UserResponseDto;
-import com.example.bankwalletrestapi.services.UserService;
+import com.example.bankwalletrestapi.services.interfaces.IUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+    private final IUserService userService;
 
     @PostMapping
     public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody UserCreateDto userCreateDto) {

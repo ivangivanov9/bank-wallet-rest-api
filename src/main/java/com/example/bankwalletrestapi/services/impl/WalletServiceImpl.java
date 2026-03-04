@@ -1,4 +1,4 @@
-package com.example.bankwalletrestapi.services;
+package com.example.bankwalletrestapi.services.impl;
 
 import com.example.bankwalletrestapi.external.client.ExchangeRateClient;
 import com.example.bankwalletrestapi.models.dtos.userDtos.UserResponseDto;
@@ -8,6 +8,7 @@ import com.example.bankwalletrestapi.models.entities.User;
 import com.example.bankwalletrestapi.models.entities.Wallet;
 import com.example.bankwalletrestapi.repositories.UserRepository;
 import com.example.bankwalletrestapi.repositories.WalletRepository;
+import com.example.bankwalletrestapi.services.interfaces.IWalletService;
 import com.example.bankwalletrestapi.utils.DtoMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,7 @@ import java.math.BigDecimal;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class WalletService {
+public class WalletServiceImpl implements IWalletService {
 
     private final WalletRepository walletRepository;
     private final UserRepository userRepository;
