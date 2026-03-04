@@ -1,7 +1,7 @@
 package com.example.bankwalletrestapi.controllers;
 
 import com.example.bankwalletrestapi.models.dtos.userDtos.UserResponseDto;
-import com.example.bankwalletrestapi.services.UserService;
+import com.example.bankwalletrestapi.services.interfaces.IUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final UserService userService;
+    private final IUserService userService;
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")

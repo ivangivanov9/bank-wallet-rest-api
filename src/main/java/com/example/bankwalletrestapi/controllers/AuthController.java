@@ -6,7 +6,7 @@ import com.example.bankwalletrestapi.models.dtos.authDtos.RegisterDto;
 import com.example.bankwalletrestapi.models.dtos.userDtos.UserResponseDto;
 import com.example.bankwalletrestapi.security.CustomUserDetails;
 import com.example.bankwalletrestapi.security.JwtService;
-import com.example.bankwalletrestapi.services.UserService;
+import com.example.bankwalletrestapi.services.interfaces.IUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-    private final UserService userService;
+    private final IUserService userService;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody LoginDto request) {
