@@ -35,14 +35,14 @@ public class UserServiceImpl implements IUserService {
             throw new RuntimeException("Username already exists: " + userCreateDto.getUsername());
         }
 
-        User user = new User();
-        user.setUsername(userCreateDto.getUsername());
-        user.setEmail(userCreateDto.getEmail());
+        User user = new User(
+                userCreateDto.getUsername(),
+                userCreateDto.getEmail(),
+                passwordEncoder.encode(userCreateDto.getPassword()));
 
         Wallet wallet = new Wallet();
         wallet.setBalance(BigDecimal.ZERO);
         wallet.setUser(user);
-
         user.setWallet(wallet);
 
         User savedUser = userRepository.save(user);
