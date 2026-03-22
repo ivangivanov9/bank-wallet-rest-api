@@ -295,8 +295,8 @@ bank-wallet-rest-api/
 │   │   └── resources/
 │   │       ├── application.properties
 │   │       ├── application-docker.properties
-│   │       ├── schema.sql
-│   │       └── seed-data.sql
+│   │       ├── schema.sql.backup
+│   │       └── seed-data.sql.backup
 │   └── test/
 ├── Dockerfile
 ├── docker-compose.yml
