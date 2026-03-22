@@ -459,4 +459,5 @@ git clone https://github.com/ivanivanovg9/bank-wallet-rest-api.git
 cd bank-wallet-rest-api
 docker-compose up -d
 #   T e s t   t r i g g e r  
+ #   T e s t i n g   C I / C D   p i p e l i n e  
  
