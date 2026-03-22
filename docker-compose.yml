@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # PostgreSQL база данни
   postgres:
     image: postgres:15-alpine
     container_name: bank-postgres
@@ -12,10 +11,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      # Persistent volume за данните
       - postgres-data:/var/lib/postgresql/data
-      # Автоматично изпълнение на SQL скриптове при стартиране
-      - ./src/main/resources:/docker-entrypoint-initdb.d
     networks:
       - bank-network
     healthcheck:
@@ -25,7 +21,6 @@ services:
       retries: 5
     restart: unless-stopped
 
-  # Spring Boot приложението
   app:
     build: .
     container_name: bank-wallet-app
@@ -33,10 +28,6 @@ services:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bankdb
-      SPRING_DATASOURCE_USERNAME: bankuser
-      SPRING_DATASOURCE_PASSWORD: bankpass123
-      JWT_SECRET: "mySecretKeyForJWTTokenGenerationAndValidation12345678901234567890"
     depends_on:
       postgres:
         condition: service_healthy
