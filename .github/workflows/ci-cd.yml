@@ -1,0 +1,146 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+
+env:
+  DOCKER_IMAGE: ivanivanovg9/bank-wallet-api
+  JAVA_VERSION: '17'
+
+jobs:
+  # ==================== JOB 1: Build and Test ====================
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build with Maven
+        run: mvn clean compile -DskipTests
+
+      - name: Run Unit Tests
+        run: mvn test
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: target/surefire-reports/
+
+      - name: Publish Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Maven Tests
+          path: target/surefire-reports/TEST-*.xml
+          reporter: java-junit
+
+  # ==================== JOB 2: Security Scan ====================
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy (filesystem)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # ==================== JOB 3: Docker Build and Push ====================
+  docker-build:
+    name: Docker Build and Push
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set version
+        id: version
+        run: |
+          VERSION=$(date +'%Y%m%d-%H%M%S')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "COMMIT_SHA=${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.VERSION }} .
+          docker tag ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.VERSION }} ${{ env.DOCKER_IMAGE }}:latest
+          docker tag ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.VERSION }} ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.COMMIT_SHA }}
+
+      - name: Push to Docker Hub
+        run: |
+          docker push ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.VERSION }}
+          docker push ${{ env.DOCKER_IMAGE }}:latest
+          docker push ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.COMMIT_SHA }}
+
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.DOCKER_IMAGE }}:latest
+          format: 'sarif'
+          output: 'trivy-image-results.sarif'
+
+      - name: Upload Trivy image results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-image-results.sarif'
+
+  # ==================== JOB 4: Notifications ====================
+  notify:
+    name: Notifications
+    runs-on: ubuntu-latest
+    needs: [build-and-test, security-scan, docker-build]
+    if: always()
+
+    steps:
+      - name: Send GitHub status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const success = ${{ needs.build-and-test.result == 'success' && needs.security-scan.result == 'success' }}
+            const message = success ? '✅ Pipeline completed successfully!' : '❌ Pipeline failed!'
+            console.log(message)
